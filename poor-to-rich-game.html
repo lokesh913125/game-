@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RISE UP — Poor to Rich</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080c10;--s1:#0d1117;--s2:#161b22;--s3:#21262d;
+  --gold:#ffd700;--gold2:#ffb300;--neon:#00ff88;--neon2:#00cc6a;
+  --red:#ff4757;--blue:#1e90ff;--purple:#a855f7;--orange:#ff6b35;
+  --text:#e6edf3;--muted:#8b949e;--border:#30363d;
+  --font-head:'Black Ops One',cursive;
+  --font-ui:'Barlow Condensed',sans-serif;
+  --font-body:'Barlow',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);cursor:default;}
+
+/* ── SCREEN SYSTEM ── */
+.screen{position:fixed;inset:0;display:none;flex-direction:column;overflow:hidden;}
+.screen.active{display:flex;}
+
+/* ══════════════════════════════════════════
+   SPLASH / INTRO
+══════════════════════════════════════════ */
+#splash{background:#000;align-items:center;justify-content:center;gap:0;}
+.splash-bg{position:absolute;inset:0;overflow:hidden;}
+.splash-bg canvas{width:100%;height:100%;}
+.splash-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;padding:20px;}
+.splash-eyebrow{font-family:var(--font-ui);font-size:13px;letter-spacing:6px;color:var(--neon);text-transform:uppercase;animation:fadeIn 1s both;}
+.splash-title{font-family:var(--font-head);font-size:clamp(52px,12vw,110px);line-height:.9;
+  background:linear-gradient(135deg,#fff 0%,var(--gold) 50%,var(--gold2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow:none;animation:titleDrop .8s cubic-bezier(.2,1.4,.4,1) both .3s;}
+.splash-sub{font-family:var(--font-ui);font-size:16px;letter-spacing:3px;color:var(--muted);animation:fadeIn 1s both .6s;}
+.splash-name-wrap{animation:fadeIn .8s both .9s;}
+.splash-name-wrap label{font-family:var(--font-ui);font-size:12px;letter-spacing:3px;color:var(--muted);display:block;margin-bottom:6px;}
+.splash-name-input{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:4px;
+  padding:12px 20px;color:var(--text);font-family:var(--font-ui);font-size:18px;letter-spacing:2px;
+  text-align:center;outline:none;width:240px;}
+.splash-name-input:focus{border-color:var(--neon);box-shadow:0 0 0 3px rgba(0,255,136,.15);}
+.btn-start{margin-top:8px;padding:16px 52px;font-family:var(--font-head);font-size:22px;letter-spacing:2px;
+  background:linear-gradient(135deg,var(--neon),var(--neon2));border:none;border-radius:4px;
+  color:#000;cursor:pointer;transition:all .2s;animation:fadeIn .8s both 1.1s;
+  box-shadow:0 0 30px rgba(0,255,136,.4);}
+.btn-start:hover{transform:scale(1.04);box-shadow:0 0 50px rgba(0,255,136,.7);}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+@keyframes titleDrop{from{opacity:0;transform:translateY(-40px) scale(.8);}to{opacity:1;transform:none;}}
+
+/* ══════════════════════════════════════════
+   HUD BAR (always on top in game screens)
+══════════════════════════════════════════ */
+#hud{
+  position:fixed;top:0;left:0;right:0;height:52px;
+  background:rgba(8,12,16,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  display:none;align-items:center;gap:0;z-index:100;
+  padding:0 12px;
+}
+#hud.visible{display:flex;}
+.hud-name{font-family:var(--font-head);font-size:15px;color:var(--gold);letter-spacing:1px;margin-right:12px;white-space:nowrap;}
+.hud-stat{display:flex;align-items:center;gap:5px;padding:4px 10px;
+  border-right:1px solid var(--border);font-family:var(--font-ui);font-size:14px;font-weight:600;white-space:nowrap;}
+.hud-stat .lbl{font-size:10px;letter-spacing:1px;color:var(--muted);display:block;line-height:1;}
+.hud-stat .val{font-size:15px;line-height:1.2;}
+.hs-money .val{color:var(--gold);}
+.hs-happy .val{color:var(--neon);}
+.hs-health .val{color:var(--red);}
+.hs-rep .val{color:var(--blue);}
+.hs-day .val{color:var(--purple);}
+.hud-rank{margin-left:auto;padding:4px 14px;border-radius:20px;
+  font-family:var(--font-head);font-size:13px;letter-spacing:1px;border:1px solid;}
+.r0{color:#ff4757;border-color:#ff4757;background:rgba(255,71,87,.12);}
+.r1{color:#ff6b35;border-color:#ff6b35;background:rgba(255,107,53,.12);}
+.r2{color:#ffd700;border-color:#ffd700;background:rgba(255,215,0,.12);}
+.r3{color:var(--neon);border-color:var(--neon);background:rgba(0,255,136,.12);}
+.r4{color:#a855f7;border-color:#a855f7;background:rgba(168,85,247,.12);}
+.r5{color:#ffd700;border-color:#ffd700;background:rgba(255,215,0,.2);box-shadow:0 0 10px rgba(255,215,0,.3);}
+
+/* ══════════════════════════════════════════
+   CITY MAP
+══════════════════════════════════════════ */
+#cityScreen{background:var(--bg);padding-top:52px;}
+.city-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.city-title-bar{padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);}
+.city-title{font-family:var(--font-head);font-size:18px;color:var(--text);letter-spacing:1px;}
+.city-sub{font-family:var(--font-ui);font-size:13px;color:var(--muted);letter-spacing:1px;}
+.city-day-btn{margin-left:auto;padding:8px 20px;font-family:var(--font-head);font-size:14px;letter-spacing:1px;
+  background:linear-gradient(135deg,var(--neon),var(--neon2));border:none;border-radius:4px;
+  color:#000;cursor:pointer;transition:all .25s;box-shadow:0 0 15px rgba(0,255,136,.2);}
+.city-day-btn:hover{box-shadow:0 0 25px rgba(0,255,136,.5);transform:translateY(-1px);}
+.city-grid{flex:1;overflow-y:auto;padding:14px;display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
+.city-location{background:var(--s2);border:1px solid var(--border);border-radius:10px;
+  padding:16px;cursor:pointer;transition:all .22s;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;}
+.city-location::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .22s;
+  background:radial-gradient(circle at center,rgba(0,255,136,.12),transparent 70%);}
+.city-location:hover{border-color:var(--neon);transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,.5);}
+.city-location:hover::before{opacity:1;}
+.city-location.locked{opacity:.45;cursor:not-allowed;}
+.city-location.locked:hover{transform:none;border-color:var(--border);}
+.loc-icon{font-size:38px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));}
+.loc-name{font-family:var(--font-head);font-size:13px;letter-spacing:1px;color:var(--text);}
+.loc-desc{font-size:11px;color:var(--muted);line-height:1.4;}
+.loc-badge{position:absolute;top:8px;right:8px;font-size:10px;padding:2px 7px;
+  border-radius:8px;font-family:var(--font-ui);letter-spacing:1px;font-weight:700;}
+.lb-work{background:rgba(0,255,136,.15);color:var(--neon);border:1px solid rgba(0,255,136,.3);}
+.lb-shop{background:rgba(255,215,0,.15);color:var(--gold);border:1px solid rgba(255,215,0,.3);}
+.lb-fun{background:rgba(30,144,255,.15);color:var(--blue);border:1px solid rgba(30,144,255,.3);}
+.lb-love{background:rgba(255,71,87,.15);color:var(--red);border:1px solid rgba(255,71,87,.3);}
+.lb-rival{background:rgba(168,85,247,.15);color:var(--purple);border:1px solid rgba(168,85,247,.3);}
+.lb-locked{background:rgba(139,148,158,.1);color:var(--muted);border:1px solid var(--border);}
+.loc-req{font-size:10px;color:var(--orange);margin-top:2px;}
+
+/* ══════════════════════════════════════════
+   ACTION PANEL (modal-style)
+══════════════════════════════════════════ */
+#actionPanel{
+  position:fixed;inset:0;z-index:200;
+  display:none;align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+}
+#actionPanel.open{display:flex;}
+.ap-sheet{
+  width:100%;max-width:600px;max-height:80vh;overflow-y:auto;
+  background:var(--s1);border:1px solid var(--border);border-radius:14px 14px 0 0;
+  padding:20px;
+  animation:slideUp .3s cubic-bezier(.2,1,.4,1);
+}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.ap-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.ap-icon{font-size:32px;}
+.ap-title{font-family:var(--font-head);font-size:20px;letter-spacing:1px;}
+.ap-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+.ap-close{margin-left:auto;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:4px 8px;}
+.ap-close:hover{color:var(--text);}
+.ap-section{margin-bottom:14px;}
+.ap-section-title{font-family:var(--font-ui);font-size:11px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;}
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+@media(max-width:400px){.action-grid{grid-template-columns:1fr;}}
+.act-btn{background:var(--s3);border:1px solid var(--border);border-radius:8px;
+  padding:12px;cursor:pointer;text-align:left;transition:all .18s;color:var(--text);}
+.act-btn:hover{border-color:var(--neon);background:rgba(0,255,136,.06);transform:translateY(-2px);}
+.act-btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
+.act-btn .act-name{font-family:var(--font-ui);font-size:14px;font-weight:700;letter-spacing:.5px;}
+.act-btn .act-cost{font-size:11px;margin-top:4px;}
+.act-btn .act-cost .pos{color:var(--neon);}
+.act-btn .act-cost .neg{color:var(--red);}
+.act-btn .act-cost .gold{color:var(--gold);}
+.act-btn .act-cost .info{color:var(--muted);}
+
+/* ══════════════════════════════════════════
+   MINI GAME SCREENS
+══════════════════════════════════════════ */
+#miniGameScreen{background:var(--bg);padding-top:52px;align-items:center;justify-content:center;}
+.mg-container{width:100%;max-width:480px;padding:16px;display:flex;flex-direction:column;gap:14px;}
+.mg-title{font-family:var(--font-head);font-size:24px;letter-spacing:2px;text-align:center;}
+.mg-sub{font-size:14px;color:var(--muted);text-align:center;font-family:var(--font-ui);}
+/* Tap game */
+.tap-area{height:180px;background:var(--s2);border:2px dashed var(--border);border-radius:12px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  cursor:pointer;transition:all .1s;user-select:none;-webkit-user-select:none;}
+.tap-area:active{transform:scale(.97);background:var(--s3);border-color:var(--neon);}
+.tap-emoji{font-size:52px;pointer-events:none;}
+.tap-count{font-family:var(--font-head);font-size:36px;color:var(--gold);pointer-events:none;}
+.tap-hint{font-size:13px;color:var(--muted);font-family:var(--font-ui);pointer-events:none;}
+.mg-timer{height:8px;background:var(--s3);border-radius:4px;overflow:hidden;}
+.mg-timer-fill{height:100%;border-radius:4px;transition:width .1s linear;background:linear-gradient(90deg,var(--neon),var(--gold));}
+/* Delivery game */
+.delivery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.del-pkg{height:70px;background:var(--s2);border:2px solid var(--border);border-radius:8px;
+  font-size:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:all .15s;user-select:none;}
+.del-pkg:hover{transform:scale(1.05);}
+.del-pkg.correct{border-color:var(--neon);background:rgba(0,255,136,.12);animation:pop .2s;}
+.del-pkg.wrong{border-color:var(--red);background:rgba(255,71,87,.12);animation:shake .3s;}
+@keyframes pop{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
+/* Stock game */
+.stock-chart{height:120px;background:var(--s2);border-radius:8px;overflow:hidden;position:relative;}
+.stock-chart canvas{width:100%;height:100%;}
+.mg-result{text-align:center;padding:20px;background:var(--s2);border-radius:10px;border:1px solid var(--border);}
+.mg-result .res-earn{font-family:var(--font-head);font-size:32px;color:var(--gold);}
+.mg-result .res-sub{color:var(--muted);font-size:14px;margin-top:4px;}
+.mg-btn{width:100%;padding:14px;font-family:var(--font-head);font-size:18px;letter-spacing:2px;
+  background:linear-gradient(135deg,var(--neon),var(--neon2));border:none;border-radius:6px;
+  color:#000;cursor:pointer;transition:all .2s;}
+.mg-btn:hover{box-shadow:0 0 20px rgba(0,255,136,.4);}
+.mg-btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;}
+.mg-btn.red{background:linear-gradient(135deg,var(--red),#c0392b);color:#fff;}
+
+/* ══════════════════════════════════════════
+   RIVAL SCREEN
+══════════════════════════════════════════ */
+#rivalScreen{background:var(--bg);padding-top:52px;}
+.rival-wrap{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;}
+.rival-card{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:16px;
+  display:flex;align-items:center;gap:14px;}
+.rival-avatar{font-size:42px;flex-shrink:0;}
+.rival-info{flex:1;}
+.rival-name{font-family:var(--font-head);font-size:16px;letter-spacing:1px;}
+.rival-desc{font-size:12px;color:var(--muted);margin-top:3px;}
+.rival-wealth{font-family:var(--font-ui);font-size:13px;font-weight:700;color:var(--gold);margin-top:5px;}
+.rival-status{font-size:11px;margin-top:3px;}
+.rival-actions{display:flex;flex-direction:column;gap:6px;}
+.rv-btn{padding:8px 14px;border-radius:6px;font-family:var(--font-ui);font-size:13px;font-weight:700;
+  cursor:pointer;border:1px solid;transition:all .18s;white-space:nowrap;letter-spacing:.5px;}
+.rv-btn.challenge{background:rgba(255,71,87,.12);border-color:rgba(255,71,87,.4);color:var(--red);}
+.rv-btn.challenge:hover{background:rgba(255,71,87,.25);}
+.rv-btn.ally{background:rgba(0,255,136,.1);border-color:rgba(0,255,136,.3);color:var(--neon);}
+.rv-btn.ally:hover{background:rgba(0,255,136,.2);}
+.rv-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ══════════════════════════════════════════
+   LOVE SCREEN
+══════════════════════════════════════════ */
+#loveScreen{background:var(--bg);padding-top:52px;}
+.love-wrap{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;}
+.love-status-card{background:linear-gradient(135deg,rgba(255,71,87,.1),rgba(168,85,247,.1));
+  border:1px solid rgba(255,71,87,.3);border-radius:10px;padding:16px;text-align:center;}
+.love-heart{font-size:40px;animation:heartbeat 1.5s infinite;}
+@keyframes heartbeat{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+.love-person-name{font-family:var(--font-head);font-size:20px;color:var(--red);letter-spacing:1px;margin-top:6px;}
+.love-meter-wrap{margin:10px 0;}
+.love-meter-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px;}
+.love-meter-track{height:8px;background:var(--s3);border-radius:4px;overflow:hidden;}
+.love-meter-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--red),var(--purple));transition:width .4s;}
+.love-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.love-act{background:var(--s3);border:1px solid var(--border);border-radius:8px;
+  padding:12px;cursor:pointer;text-align:center;transition:all .18s;}
+.love-act:hover{border-color:var(--red);background:rgba(255,71,87,.06);}
+.love-act:disabled{opacity:.4;cursor:not-allowed;}
+.love-act .la-icon{font-size:24px;}
+.love-act .la-name{font-family:var(--font-ui);font-size:13px;font-weight:700;margin-top:4px;}
+.love-act .la-cost{font-size:11px;color:var(--muted);margin-top:2px;}
+.la-cost .neg{color:var(--red);}.la-cost .pos{color:var(--neon);}
+.love-person-card{background:var(--s2);border:1px solid var(--border);border-radius:10px;
+  padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .18s;}
+.love-person-card:hover{border-color:rgba(255,71,87,.5);}
+.lp-avatar{font-size:36px;}
+.lp-name{font-family:var(--font-head);font-size:15px;letter-spacing:1px;}
+.lp-desc{font-size:12px;color:var(--muted);margin-top:2px;}
+.lp-req{font-size:11px;color:var(--orange);margin-top:3px;}
+
+/* ══════════════════════════════════════════
+   SHOP SCREEN
+══════════════════════════════════════════ */
+#shopScreen{background:var(--bg);padding-top:52px;}
+.shop-wrap{flex:1;overflow-y:auto;padding:14px;}
+.shop-cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:10px;
+  border-bottom:1px solid var(--border);}
+.scat-btn{padding:6px 14px;border-radius:20px;font-family:var(--font-ui);font-size:13px;font-weight:600;
+  letter-spacing:.5px;border:1px solid var(--border);background:var(--s3);color:var(--muted);cursor:pointer;transition:all .18s;}
+.scat-btn.on{background:rgba(255,215,0,.15);border-color:var(--gold);color:var(--gold);}
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+.shop-card{background:var(--s2);border:1px solid var(--border);border-radius:10px;
+  padding:13px;display:flex;flex-direction:column;gap:5px;position:relative;transition:all .18s;}
+.shop-card:hover{border-color:rgba(255,215,0,.3);transform:translateY(-2px);}
+.shop-card.owned{border-color:rgba(0,255,136,.35);background:rgba(0,255,136,.02);}
+.sc-emoji{font-size:32px;text-align:center;}
+.sc-name{font-family:var(--font-ui);font-size:13px;font-weight:700;letter-spacing:.5px;}
+.sc-desc{font-size:11px;color:var(--muted);line-height:1.4;}
+.sc-price{font-size:13px;font-weight:700;color:var(--gold);}
+.sc-fx{font-size:10px;color:var(--neon);line-height:1.5;}
+.sc-badge{position:absolute;top:7px;right:7px;font-size:9px;padding:1px 6px;border-radius:6px;
+  font-family:var(--font-ui);font-weight:700;letter-spacing:1px;}
+.scb-own{background:rgba(0,255,136,.2);color:var(--neon);border:1px solid rgba(0,255,136,.4);}
+.scb-lock{background:rgba(139,148,158,.1);color:var(--muted);border:1px solid var(--border);}
+.sc-buy-btn{padding:7px;border-radius:5px;font-family:var(--font-ui);font-size:12px;font-weight:700;
+  cursor:pointer;border:1px solid;transition:all .15s;letter-spacing:.5px;margin-top:2px;}
+.sc-buy-btn.can{background:linear-gradient(135deg,var(--gold),var(--gold2));border-color:var(--gold2);color:#000;}
+.sc-buy-btn.can:hover{box-shadow:0 0 12px rgba(255,215,0,.4);}
+.sc-buy-btn.cant{background:transparent;border-color:var(--border);color:var(--muted);cursor:not-allowed;}
+.sc-use-btn{padding:7px;border-radius:5px;font-family:var(--font-ui);font-size:12px;font-weight:700;
+  cursor:pointer;background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);color:var(--neon);transition:all .15s;}
+.sc-use-btn:hover{background:rgba(0,255,136,.2);}
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(0);
+  background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  padding:10px 22px;font-family:var(--font-ui);font-size:14px;font-weight:600;
+  pointer-events:none;opacity:0;transition:opacity .25s, transform .25s;z-index:999;
+  white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.6);}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+#toast.pos{border-color:var(--neon);color:var(--neon);}
+#toast.neg{border-color:var(--red);color:var(--red);}
+#toast.gold{border-color:var(--gold);color:var(--gold);}
+#toast.purple{border-color:var(--purple);color:var(--purple);}
+
+/* ══════════════════════════════════════════
+   STORY / EVENT MODAL
+══════════════════════════════════════════ */
+#storyModal{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(6px);padding:16px;}
+#storyModal.open{display:flex;}
+.sm-box{width:100%;max-width:480px;background:var(--s1);border:1px solid var(--border);
+  border-radius:14px;padding:22px;animation:fadeIn .3s both;}
+.sm-tag{display:inline-block;font-family:var(--font-ui);font-size:11px;letter-spacing:2px;
+  padding:3px 10px;border-radius:12px;margin-bottom:10px;font-weight:700;}
+.sm-tag.work{background:rgba(0,255,136,.15);color:var(--neon);border:1px solid rgba(0,255,136,.3);}
+.sm-tag.event{background:rgba(255,215,0,.15);color:var(--gold);border:1px solid rgba(255,215,0,.3);}
+.sm-tag.story{background:rgba(30,144,255,.15);color:var(--blue);border:1px solid rgba(30,144,255,.3);}
+.sm-tag.love{background:rgba(255,71,87,.15);color:var(--red);border:1px solid rgba(255,71,87,.3);}
+.sm-tag.rival{background:rgba(168,85,247,.15);color:var(--purple);border:1px solid rgba(168,85,247,.3);}
+.sm-text{font-size:15px;line-height:1.7;color:var(--text);margin-bottom:16px;}
+.sm-choices{display:flex;flex-direction:column;gap:8px;}
+.sm-choice{background:var(--s3);border:1px solid var(--border);border-radius:8px;
+  padding:13px 16px;cursor:pointer;text-align:left;transition:all .18s;font-family:var(--font-body);}
+.sm-choice:hover{border-color:var(--neon);background:rgba(0,255,136,.06);}
+.sm-choice .ch-text{font-size:14px;font-weight:600;color:var(--text);}
+.sm-choice .ch-fx{font-size:11px;color:var(--muted);margin-top:4px;}
+.ch-fx .pos{color:var(--neon);}.ch-fx .neg{color:var(--red);}.ch-fx .gold{color:var(--gold);}
+
+/* ══════════════════════════════════════════
+   GAME OVER
+══════════════════════════════════════════ */
+#gameOver{background:rgba(0,0,0,.97);align-items:center;justify-content:center;gap:16px;
+  flex-direction:column;text-align:center;padding:20px;z-index:500;}
+.go-title{font-family:var(--font-head);font-size:clamp(40px,10vw,80px);letter-spacing:3px;}
+.go-sub{font-size:16px;color:var(--muted);font-family:var(--font-ui);letter-spacing:2px;}
+.go-card{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:24px 40px;}
+.go-money{font-family:var(--font-head);font-size:44px;color:var(--gold);}
+.go-stats{font-size:13px;color:var(--muted);margin-top:6px;}
+
+/* ══════════════════════════════════════════
+   BOTTOM NAV
+══════════════════════════════════════════ */
+#bottomNav{position:fixed;bottom:0;left:0;right:0;height:56px;
+  background:rgba(8,12,16,.95);backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);display:none;align-items:stretch;z-index:100;}
+#bottomNav.visible{display:flex;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  background:none;border:none;color:var(--muted);cursor:pointer;font-family:var(--font-ui);
+  font-size:10px;letter-spacing:.5px;transition:color .18s;padding-bottom:4px;}
+.nav-btn:hover,.nav-btn.on{color:var(--neon);}
+.nav-btn .ni{font-size:20px;}
+
+/* scrollbar */
+::-webkit-scrollbar{width:4px;}.
+::-webkit-scrollbar-track{background:var(--s1);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ SPLASH ═══════════ -->
+<div id="splash" class="screen active">
+  <canvas id="splashCanvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
+  <div class="splash-content">
+    <div class="splash-eyebrow">A Story of Struggle &amp; Success</div>
+    <div class="splash-title">RISE UP</div>
+    <div class="splash-sub">FROM NOTHING TO EVERYTHING</div>
+    <div class="splash-name-wrap">
+      <label>ENTER YOUR NAME</label>
+      <input class="splash-name-input" id="playerNameInput" placeholder="e.g. Raju, Aryan..." maxlength="16">
+    </div>
+    <button class="btn-start" onclick="startGame()">BEGIN YOUR STORY</button>
+  </div>
+</div>
+
+<!-- ═══════════ HUD ═══════════ -->
+<div id="hud">
+  <span class="hud-name" id="hudName">RAJU</span>
+  <div class="hud-stat hs-money"><span class="lbl">MONEY</span><span class="val" id="hudMoney">₹500</span></div>
+  <div class="hud-stat hs-happy"><span class="lbl">MOOD</span><span class="val" id="hudHappy">50</span></div>
+  <div class="hud-stat hs-health"><span class="lbl">HEALTH</span><span class="val" id="hudHealth">80</span></div>
+  <div class="hud-stat hs-rep"><span class="lbl">REP</span><span class="val" id="hudRep">0</span></div>
+  <div class="hud-stat hs-day"><span class="lbl">DAY</span><span class="val" id="hudDay">1</span></div>
+  <div class="hud-rank" id="hudRank">BROKE</div>
+</div>
+
+<!-- ═══════════ CITY MAP ═══════════ -->
+<div id="cityScreen" class="screen">
+  <div class="city-wrap">
+    <div class="city-title-bar">
+      <div>
+        <div class="city-title" id="cityTitle">🌆 DOWNTOWN</div>
+        <div class="city-sub" id="citySubtitle">Choose where to go today</div>
+      </div>
+      <button class="city-day-btn" onclick="endDay()">⏭ NEXT DAY</button>
+    </div>
+    <div class="city-grid" id="cityGrid"></div>
+  </div>
+</div>
+
+<!-- ═══════════ MINI GAME ═══════════ -->
+<div id="miniGameScreen" class="screen">
+  <div class="mg-container" id="mgContainer"></div>
+</div>
+
+<!-- ═══════════ RIVAL SCREEN ═══════════ -->
+<div id="rivalScreen" class="screen">
+  <div class="rival-wrap" id="rivalWrap"></div>
+</div>
+
+<!-- ═══════════ LOVE SCREEN ═══════════ -->
+<div id="loveScreen" class="screen">
+  <div class="love-wrap" id="loveWrap"></div>
+</div>
+
+<!-- ═══════════ SHOP SCREEN ═══════════ -->
+<div id="shopScreen" class="screen">
+  <div class="shop-wrap">
+    <div class="shop-cats" id="shopCats"></div>
+    <div class="shop-grid" id="shopGrid"></div>
+  </div>
+</div>
+
+<!-- ═══════════ GAME OVER ═══════════ -->
+<div id="gameOver" class="screen">
+  <div class="go-title" id="goTitle">GAME OVER</div>
+  <div class="go-sub" id="goSub">Tu hara nahi, tu thaka tha.</div>
+  <div class="go-card">
+    <div style="color:var(--muted);font-family:var(--font-ui);letter-spacing:2px;font-size:12px;">FINAL WEALTH</div>
+    <div class="go-money" id="goMoney">₹0</div>
+    <div class="go-stats" id="goStats"></div>
+  </div>
+  <button class="btn-start" onclick="location.reload()">🔄 PLAY AGAIN</button>
+</div>
+
+<!-- ═══════════ ACTION PANEL ═══════════ -->
+<div id="actionPanel">
+  <div class="ap-sheet" id="apSheet"></div>
+</div>
+
+<!-- ═══════════ STORY MODAL ═══════════ -->
+<div id="storyModal">
+  <div class="sm-box" id="smBox"></div>
+</div>
+
+<!-- ═══════════ BOTTOM NAV ═══════════ -->
+<div id="bottomNav">
+  <button class="nav-btn on" id="nb-city" onclick="goScreen('cityScreen');setNav('nb-city')"><span class="ni">🌆</span>CITY</button>
+  <button class="nav-btn" id="nb-shop" onclick="goScreen('shopScreen');renderShop();setNav('nb-shop')"><span class="ni">🛍️</span>SHOP</button>
+  <button class="nav-btn" id="nb-rival" onclick="goScreen('rivalScreen');renderRivals();setNav('nb-rival')"><span class="ni">😠</span>RIVALS</button>
+  <button class="nav-btn" id="nb-love" onclick="goScreen('loveScreen');renderLove();setNav('nb-love')"><span class="ni">💘</span>LOVE</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════
+   SPLASH PARTICLES
+════════════════════════════════════════════ */
+(function(){
+  var c=document.getElementById('splashCanvas'),ctx=c.getContext('2d'),pts=[];
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  for(var i=0;i<120;i++) pts.push({x:Math.random()*c.width,y:Math.random()*c.height,
+    vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,r:Math.random()*1.5+.5,
+    a:Math.random(),gold:Math.random()>.7});
+  function draw(){
+    c.width=c.width;
+    pts.forEach(function(p){
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=c.width;if(p.x>c.width)p.x=0;
+      if(p.y<0)p.y=c.height;if(p.y>c.height)p.y=0;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.gold?'rgba(255,215,0,'+p.a*.6+')':'rgba(0,255,136,'+p.a*.3+')';
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ════════════════════════════════════════════
+   GAME STATE
+════════════════════════════════════════════ */
+var G={
+  name:'Raju',money:500,day:1,age:18,
+  happy:50,health:80,rep:0,skills:0,
+  job:null,jobLevel:0,workedToday:false,
+  ownedItems:[],businesses:[],portfolio:{},
+  rivals:{},                // id -> {status:'neutral'|'enemy'|'ally'}
+  love:{partner:null,meter:0,stage:0}, // stage 0=single,1=dating,2=married
+  log:[],
+  loveActToday:false,
+  rivalActToday:{},
+  energy:100,          // new: energy system
+  passiveIncome:0,
+};
+
+/* ════════════════════════════════════════════
+   DATA
+════════════════════════════════════════════ */
+var LOCATIONS=[
+  {id:'construction',name:'Construction Site',icon:'🏗️',desc:'Hard work pays',type:'work',badge:'lb-work',
+   actions:[
+    {name:'Day Labour',cost:'Energy -25, Health -6',earn:'+₹350',fn:function(){doWork(350,-6,-25);}},
+    {name:'Crane Work',cost:'Energy -30, Health -8',earn:'+₹500',fn:function(){doWork(500,-8,-30);},req:{skills:15}},
+   ]},
+  {id:'market',name:'Street Market',icon:'🛒',desc:'Buy & sell anything',type:'shop',badge:'lb-shop',
+   fn:function(){goScreen('shopScreen');renderShop();setNav('nb-shop');}},
+  {id:'café',name:'Café & Restaurant',icon:'☕',desc:'Work or relax',type:'work',badge:'lb-work',
+   actions:[
+    {name:'Waiter Job',cost:'Energy -20',earn:'+₹400 +2 skills',fn:function(){doWork(400,-2,-20,2);}},
+    {name:'Eat & Recharge',cost:'-₹200',earn:'+20 mood +10 health',fn:function(){spend(200,20,10,0,0,'🍔 Khana khaaya!');}},
+    {name:'Study Here',cost:'-₹100 Energy -15',earn:'+15 skills',fn:function(){spend(100,5,0,0,15,'📚 Study session!');G.energy=Math.max(0,G.energy-15);}},
+   ]},
+  {id:'gym',name:'Gym & Fitness',icon:'🏋️',desc:'Get stronger',type:'fun',badge:'lb-fun',
+   actions:[
+    {name:'Workout',cost:'-₹300 Energy -20',earn:'+15 health +5 mood',fn:function(){spend(300,5,15,0,0,'💪 Workout done!');G.energy=Math.max(0,G.energy-20);}},
+    {name:'Personal Trainer',cost:'-₹800',earn:'+25 health +8 skills',fn:function(){spend(800,5,25,0,8,'🏅 PT session!');},req:{money:800}},
+   ]},
+  {id:'office',name:'Business District',icon:'🏢',desc:'White collar world',type:'work',badge:'lb-work',
+   actions:[
+    {name:'Freelance Work',cost:'Energy -25',earn:'+₹600 +5 skills',fn:function(){doWork(600,-3,-25,5);},req:{skills:20}},
+    {name:'Interview',cost:'Energy -20',earn:'+8 skills +5 rep',fn:function(){G.skills=cl(G.skills+8);G.rep=cl(G.rep+5);G.energy=Math.max(0,G.energy-20);toast('👔 Interview diya!','pos');hud();},req:{skills:30}},
+    {name:'Apply for Manager',cost:'Skill 50+ Rep 30+',earn:'+₹3500/day',fn:function(){setJob('manager');},req:{skills:50,rep:30}},
+   ]},
+  {id:'tech_park',name:'Tech Park',icon:'💻',desc:'Silicon dreams',type:'work',badge:'lb-work',
+   lockReq:{skills:60},lockMsg:'Skills 60+ needed',
+   actions:[
+    {name:'Coding Gig',cost:'Energy -30',earn:'+₹1200 +8 skills',fn:function(){doWork(1200,-2,-30,8);}},
+    {name:'Join Startup',cost:'Skills 70+ needed',earn:'+₹6000/day',fn:function(){setJob('engineer');},req:{skills:70,rep:40}},
+   ]},
+  {id:'club',name:'Nightclub & Bar',icon:'🎵',desc:'Network & have fun',type:'fun',badge:'lb-fun',
+   actions:[
+    {name:'Party Night',cost:'-₹500',earn:'+25 mood -5 health',fn:function(){spend(500,25,-5,0,0,'🎉 Party raat!');},req:{money:500}},
+    {name:'Network Event',cost:'-₹800',earn:'+20 rep +10 mood',fn:function(){spend(800,10,0,20,0,'🤝 Networking!');},req:{money:800}},
+   ]},
+  {id:'hospital',name:'Hospital',icon:'🏥',desc:'Stay healthy',type:'fun',badge:'lb-fun',
+   actions:[
+    {name:'Checkup',cost:'-₹1000',earn:'+30 health',fn:function(){spend(1000,5,30,0,0,'🩺 Checkup done!');},req:{money:1000}},
+    {name:'Full Treatment',cost:'-₹3000',earn:'+60 health +10 mood',fn:function(){spend(3000,10,60,0,0,'💊 Full treatment!');},req:{money:3000}},
+   ]},
+  {id:'real_estate',name:'Real Estate Office',icon:'🏠',desc:'Property empire',type:'shop',badge:'lb-shop',
+   lockReq:{money:50000},lockMsg:'₹50K+ to unlock',
+   fn:function(){filterShop('house');goScreen('shopScreen');renderShop();setNav('nb-shop');}},
+  {id:'stock_market',name:'Stock Exchange',icon:'📈',desc:'Invest & grow',type:'work',badge:'lb-work',
+   fn:function(){openStockPanel();}},
+  {id:'luxury_mall',name:'Luxury Mall',icon:'🏬',desc:'The finest things',type:'shop',badge:'lb-shop',
+   lockReq:{money:200000},lockMsg:'₹2L+ to enter',
+   fn:function(){filterShop('luxury');goScreen('shopScreen');renderShop();setNav('nb-shop');}},
+  {id:'rivals_den',name:"Rival's Territory",icon:'😠',desc:'Face your enemies',type:'rival',badge:'lb-rival',
+   fn:function(){goScreen('rivalScreen');renderRivals();setNav('nb-rival');}},
+  {id:'park',name:'City Park',icon:'🌳',desc:'Rest & relationships',type:'love',badge:'lb-love',
+   fn:function(){goScreen('loveScreen');renderLove();setNav('nb-love');}},
+  {id:'university',name:'University',icon:'🎓',desc:'Level up your mind',type:'work',badge:'lb-work',
+   actions:[
+    {name:'Attend Lecture',cost:'-₹500 Energy -20',earn:'+20 skills',fn:function(){spend(500,5,0,0,20,'🎓 Lecture attended!');G.energy=Math.max(0,G.energy-20);},req:{money:500}},
+    {name:'Online Course',cost:'-₹200',earn:'+12 skills',fn:function(){spend(200,3,0,0,12,'💡 Course complete!');}},
+   ]},
+  {id:'casino',name:'Casino',icon:'🎰',desc:'High risk, high reward',type:'fun',badge:'lb-fun',
+   lockReq:{money:5000},lockMsg:'₹5K to enter',
+   fn:function(){startMiniGame('casino');}},
+  {id:'delivery_co',name:'Delivery Hub',icon:'🚚',desc:'Mini game: deliver fast!',type:'work',badge:'lb-work',
+   fn:function(){startMiniGame('delivery');}},
+  {id:'chai_stall',name:'Chai Stall',icon:'☕',desc:'Mini game: make chai!',type:'work',badge:'lb-work',
+   fn:function(){startMiniGame('chai');}},
+];
+
+var RIVALS=[
+  {id:'arjun',name:'Arjun Kapoor',avatar:'😎',desc:'Childhood friend turned rival. He always had more.',wealth:8000,trait:'Businessman'},
+  {id:'vikram',name:'Vikram Singh',avatar:'😤',desc:'College bully who became rich first.',wealth:25000,trait:'Investor'},
+  {id:'meera',name:'Meera Shah',avatar:'👩‍💼',desc:'Sharp competitor in your industry.',wealth:50000,trait:'Tech CEO'},
+  {id:'boss_malik',name:'Malik Bhai',avatar:'🕶️',desc:'The underboss of the city. Dangerous but powerful.',wealth:500000,trait:'Crime Lord',req:{rep:40}},
+];
+
+var LOVE_PEOPLE=[
+  {id:'priya',name:'Priya',avatar:'👩',desc:'Sweet girl from your neighbourhood.',trait:'Kind & Simple',reqRep:0,reqMoney:0},
+  {id:'sarah',name:'Sarah',avatar:'👩‍🦰',desc:'Ambitious colleague. Loves success.',trait:'Driven & Smart',reqRep:20,reqMoney:10000},
+  {id:'ananya',name:'Ananya',avatar:'👩‍💻',desc:'Tech entrepreneur. She built her own startup.',trait:'Independent & Bold',reqRep:40,reqMoney:50000},
+  {id:'aisha',name:'Aisha',avatar:'👸',desc:'Socialite. Travels the world. Out of most people\'s league.',trait:'Glamorous & Elite',reqRep:70,reqMoney:500000},
+];
+
+var SHOP_CATS=[
+  {id:'all',label:'⭐ All'},{id:'house',label:'🏠 Home'},{id:'vehicle',label:'🚗 Ride'},
+  {id:'clothes',label:'👔 Style'},{id:'food',label:'🍽️ Food'},{id:'tech',label:'📱 Tech'},
+  {id:'luxury',label:'💎 Luxury'},{id:'health',label:'❤️ Health'},{id:'fun',label:'🎮 Fun'},
+];
+
+var SHOP_ITEMS=[
+  {id:'jhuggi',cat:'house',n:'Jhuggi',e:'🏚️',p:0,d:'Starting point',hb:0,hlb:0,start:true},
+  {id:'room',cat:'house',n:'Rented Room',e:'🚪',p:3000,d:'Small private room',hb:3,hlb:2,ef:{happy:5}},
+  {id:'flat1',cat:'house',n:'1BHK Flat',e:'🏠',p:30000,d:'Your own flat!',hb:7,hlb:4,ef:{happy:12}},
+  {id:'flat2',cat:'house',n:'2BHK Flat',e:'🏢',p:90000,d:'Spacious living',hb:12,hlb:6,ef:{happy:18}},
+  {id:'villa',cat:'house',n:'Villa',e:'🏡',p:500000,d:'Bungalow + garden',hb:20,hlb:10,ef:{happy:28}},
+  {id:'mansion',cat:'house',n:'Mansion',e:'🏰',p:2000000,d:'Royal home, pool!',hb:35,hlb:15,ef:{happy:45}},
+  {id:'penthouse',cat:'house',n:'Penthouse',e:'🌃',p:8000000,d:'City skyline views',hb:50,hlb:20,ef:{happy:60,rep:20}},
+
+  {id:'cycle',cat:'vehicle',n:'Bicycle',e:'🚲',p:2000,d:'Eco & fit',hb:2,hlb:4,ef:{happy:3}},
+  {id:'bike',cat:'vehicle',n:'Splendor Bike',e:'🏍️',p:70000,d:'Classic desi ride',hb:5,ef:{happy:10}},
+  {id:'activa',cat:'vehicle',n:'Honda Activa',e:'🛵',p:85000,d:'City scooter',hb:6,ef:{happy:12}},
+  {id:'nano',cat:'vehicle',n:'Tata Nano',e:'🚗',p:200000,d:'First car milestone!',hb:10,ef:{happy:20}},
+  {id:'swift',cat:'vehicle',n:'Maruti Swift',e:'🚙',p:600000,d:'Reliable & stylish',hb:16,ef:{happy:25}},
+  {id:'bmw',cat:'vehicle',n:'BMW M5',e:'🏎️',p:3000000,d:'Turn heads everywhere',hb:28,ef:{happy:40,rep:15}},
+  {id:'rolls',cat:'vehicle',n:'Rolls Royce',e:'🚘',p:15000000,d:'The pinnacle of cars',hb:50,ef:{happy:60,rep:40}},
+  {id:'helicopter',cat:'vehicle',n:'Helicopter',e:'🚁',p:25000000,d:'Above traffic forever',hb:70,ef:{happy:80,rep:60}},
+
+  {id:'rags',cat:'clothes',n:'Old Clothes',e:'👕',p:0,d:'What you have',start:true},
+  {id:'tshirt',cat:'clothes',n:'Basic T-Shirt',e:'👚',p:200,d:'Clean & decent',hb:1,ef:{happy:2}},
+  {id:'jeans',cat:'clothes',n:'Jeans & Shirt',e:'👖',p:1500,d:'Casual style',hb:3,ef:{happy:5,rep:2}},
+  {id:'suit',cat:'clothes',n:'Business Suit',e:'👔',p:8000,d:'Power dressing',hb:5,ef:{happy:8,rep:8,skills:3}},
+  {id:'branded',cat:'clothes',n:'Branded Outfit',e:'🧥',p:30000,d:'Nike, Adidas head-to-toe',hb:10,ef:{happy:15,rep:12}},
+  {id:'designer',cat:'clothes',n:'Designer Wear',e:'🥻',p:120000,d:'Gucci, LV, Versace',hb:18,ef:{happy:25,rep:25}},
+  {id:'gold_sherwani',cat:'clothes',n:'Gold Sherwani',e:'🤵',p:500000,d:'Absolute royalty vibes',hb:28,ef:{happy:38,rep:45}},
+
+  {id:'roti',cat:'food',n:'Roti Dal',e:'🫓',p:30,d:'Basic daily meal',daily:true,dc:30,ef:{health:5,happy:2}},
+  {id:'dhaba',cat:'food',n:'Dhaba Food',e:'🍛',p:100,d:'Street flavors',daily:true,dc:100,ef:{health:8,happy:10}},
+  {id:'resto',cat:'food',n:'Restaurant',e:'🍽️',p:500,d:'Sit-down dining',daily:true,dc:500,ef:{health:12,happy:18}},
+  {id:'pizza',cat:'food',n:'Pizza & Burger',e:'🍕',p:600,d:'Junk but happy',daily:true,dc:600,ef:{health:4,happy:22}},
+  {id:'sushi',cat:'food',n:'Sushi Dinner',e:'🍱',p:2000,d:'Premium cuisine',daily:true,dc:2000,ef:{health:15,happy:28}},
+  {id:'star5',cat:'food',n:'5-Star Buffet',e:'🥘',p:5000,d:'World-class dining',daily:true,dc:5000,ef:{health:20,happy:38}},
+  {id:'chef',cat:'food',n:'Personal Chef',e:'👨‍🍳',p:80000,d:'Michelin-level at home',hb:18,hlb:18,ef:{health:25,happy:30}},
+
+  {id:'nokia',cat:'tech',n:'Button Phone',e:'📞',p:800,d:'Just calls',hb:1,ef:{happy:2}},
+  {id:'android',cat:'tech',n:'Android Phone',e:'📱',p:10000,d:'Internet access',hb:4,ef:{happy:10,skills:3}},
+  {id:'iphone',cat:'tech',n:'iPhone 15 Pro',e:'📲',p:100000,d:'Flex & productivity',hb:12,ef:{happy:20,rep:12,skills:5}},
+  {id:'laptop',cat:'tech',n:'MacBook Pro',e:'💻',p:90000,d:'Work from anywhere',ef:{skills:18,happy:10}},
+  {id:'gaming_pc',cat:'tech',n:'Gaming Beast PC',e:'🖥️',p:180000,d:'4K + streaming setup',hb:15,ef:{happy:28,skills:5}},
+  {id:'swatch',cat:'tech',n:'Smart Watch',e:'⌚',p:35000,d:'Health + style',hlb:5,ef:{health:8,rep:10}},
+  {id:'drone',cat:'tech',n:'DJI Drone',e:'🛸',p:60000,d:'Content creator vibes',hb:8,ef:{happy:15,rep:8}},
+
+  {id:'chain',cat:'luxury',n:'Gold Chain',e:'📿',p:50000,d:'OG flex',ef:{rep:15,happy:12}},
+  {id:'dring',cat:'luxury',n:'Diamond Ring',e:'💍',p:300000,d:'Dazzling bling',ef:{rep:28,happy:22}},
+  {id:'rolex',cat:'luxury',n:'Rolex Watch',e:'🕰️',p:1000000,d:'Iconic status symbol',ef:{rep:35,happy:18}},
+  {id:'yacht',cat:'luxury',n:'Yacht',e:'🛥️',p:6000000,d:'Weekend on the sea',hb:35,ef:{happy:55,rep:40}},
+  {id:'jet',cat:'luxury',n:'Private Jet',e:'✈️',p:25000000,d:'Above everyone literally',hb:60,ef:{happy:80,rep:70}},
+
+  {id:'gym_m',cat:'health',n:'Gym Membership',e:'🏋️',p:2500,d:'Stay fit year-round',hlb:6,ef:{health:15,happy:8}},
+  {id:'yoga',cat:'health',n:'Yoga Classes',e:'🧘',p:2000,d:'Mind + body balance',hlb:8,hb:5,ef:{health:14,happy:14}},
+  {id:'doctor_plan',cat:'health',n:'Premium Health Plan',e:'🏥',p:25000,d:'Best doctors, covered',hlb:18,ef:{health:35}},
+  {id:'spa_pass',cat:'health',n:'Luxury Spa Pass',e:'💆',p:5000,d:'Monthly spa visits',hlb:5,hb:8,ef:{health:12,happy:20}},
+
+  {id:'ps5',cat:'fun',n:'PlayStation 5',e:'🎮',p:55000,d:'Gaming at home',hb:14,ef:{happy:30}},
+  {id:'theater',cat:'fun',n:'Home Theatre',e:'📺',p:90000,d:'Cinema experience',hb:16,ef:{happy:28}},
+  {id:'pool',cat:'fun',n:'Swimming Pool',e:'🏊',p:350000,d:'In your villa!',hb:22,hlb:10,ef:{happy:35,health:12}},
+  {id:'goa',cat:'fun',n:'Goa Trip',e:'🏖️',p:20000,d:'Beach + vibes',daily:true,dc:20000,ef:{happy:45}},
+  {id:'dubai',cat:'fun',n:'Dubai Vacation',e:'🌇',p:120000,d:'Luxury getaway',daily:true,dc:120000,ef:{happy:60,rep:20}},
+  {id:'paris',cat:'fun',n:'Paris Vacation',e:'🗼',p:200000,d:'Romance & culture',daily:true,dc:200000,ef:{happy:70,rep:30}},
+];
+
+var JOB_DATA={
+  labor:{name:'Day Labour',pay:350,emoji:'⛏️'},
+  waiter:{name:'Waiter',pay:400,emoji:'🍽️'},
+  salesman:{name:'Sales Rep',pay:1200,emoji:'📞'},
+  manager:{name:'Office Manager',pay:3500,emoji:'💼'},
+  engineer:{name:'Software Engineer',pay:6000,emoji:'💻'},
+  doctor:{name:'Doctor',pay:12000,emoji:'🩺'},
+  ceo:{name:'CEO',pay:35000,emoji:'👔'},
+};
+
+var STORY_EVENTS={
+  1:{tag:'story',text:'Tu 18 saal ka hai. Jhuggi mein reh raha hai. Pocket mein ₹500 hain. Aaj se teri zindagi ki shuruwat hai. Pehla kadam kya hoga?',
+    choices:[
+      {t:'💪 Kaam dhundhna — construction site pe jaunga',e:{money:400,health:-5,skills:2},fx:'+₹400 -5 health +2 skills'},
+      {t:'📚 Seedha padhai — library mein time dena',e:{skills:12,happy:5},fx:'+12 skills +5 mood'},
+      {t:'🤝 Network — logo se milna shuru karunga',e:{rep:8,happy:8,money:200},fx:'+8 rep +₹200 +8 mood'},
+    ]},
+  7:{tag:'story',text:'Ek hafte mein tune kuch sikh liya. Arjun (tera purana dost) ne dekha. Usne taunt maara — "Tu kabhi bhi aage nahi jaayega."',
+    choices:[
+      {t:'😤 Challenge accept! Main prove karunga',e:{rep:10,happy:-5,skills:5},fx:'+10 rep +5 skills -5 mood'},
+      {t:'😌 Ignore kar, apna kaam kar',e:{happy:5,skills:8},fx:'+5 mood +8 skills'},
+      {t:'🤝 Usse dost rakhna chahta hoon',e:{rep:5,happy:5},fx:'+5 rep +5 mood'},
+    ]},
+  15:{tag:'story',text:'15 din baad. Tune kuch paisa kamaya. Ek senior ne advice di: "Stock market mein chhoti investment kar." Kya karega?',
+    choices:[
+      {t:'📈 ₹2000 stocks mein lagaao',e:{money:-2000,skills:10},fx:'-₹2000 +10 skills (investment!)'},
+      {t:'💰 Paisa bacha ke rakh',e:{money:0,skills:3},fx:'Safe choice'},
+      {t:'🏪 Business ki taraf soch',e:{skills:8,rep:5},fx:'+8 skills +5 rep'},
+    ]},
+  30:{tag:'story',text:'1 MAHINA! Tumhari story social media pe viral ho gayi. Ek journalist ne interview maanga. Kya bolega?',
+    choices:[
+      {t:'🎤 Interview do — poori duniya suno',e:{rep:30,happy:15},fx:'+30 rep +15 mood'},
+      {t:'🤫 Private raho abhi',e:{skills:10},fx:'+10 skills (focus mode)'},
+    ]},
+  60:{tag:'story',text:'2 MAHINE! Tu ab ek alag shaks hai. Teri rival Meera ne business deal offer kiya — ₹50K investment lekin 30% profit share.',
+    choices:[
+      {t:'🤝 Deal accept karo',e:{money:50000,rep:15},fx:'+₹50000 +15 rep'},
+      {t:'❌ Seedha refuse — apni terms pe',e:{rep:10,skills:5},fx:'+10 rep +5 skills'},
+    ]},
+  90:{tag:'story',text:"90 DIN! Teri net worth ka DNA badal gaya. Rival Arjun ab tujhse dar raha hai. 'Malik Bhai' — city ka sabse powerful aadmi — ne notice kiya.",
+    choices:[
+      {t:"👑 Malik Bhai se milna chahta hoon",e:{rep:25,money:-10000},fx:'+25 rep -₹10K (connection fee)'},
+      {t:'🛡️ Seedha reh, kisi pe depend mat',e:{skills:20,happy:10},fx:'+20 skills +10 mood'},
+    ]},
+};
+
+var RANDOM_EVENTS=[
+  {tag:'event',text:'Raste mein ek wallet mila — ₹3000 cash andar.',choices:[
+    {t:'💰 Rakh le',e:{money:3000,rep:-5},fx:'+₹3000 -5 rep (conscience?)'},
+    {t:'🤝 Police station de do',e:{rep:15,happy:10},fx:'+15 rep +10 mood'},
+  ]},
+  {tag:'event',text:'Teri gaadi/bike ka accident ho gaya!',choices:[
+    {t:'🏥 Doctor ke paas jao',e:{money:-4000,health:15},fx:'-₹4000 +15 health'},
+    {t:'💊 Ghar pe rest karo',e:{health:5,happy:-10},fx:'+5 health -10 mood'},
+  ]},
+  {tag:'event',text:'Ek investor ne teri story suni. Investment offer: ₹20K seed funding!',choices:[
+    {t:'✅ Accept karo',e:{money:20000,rep:10},fx:'+₹20000 +10 rep'},
+    {t:'🤔 Terms check karo pehle',e:{money:10000,skills:5},fx:'+₹10000 +5 skills'},
+  ]},
+  {tag:'event',text:'Tera phone hack ho gaya! ₹5000 ka fraud.',choices:[
+    {t:'🚔 Cybercrime report karo',e:{money:-1000,rep:5},fx:'-₹1000 (legal fees) +5 rep'},
+    {t:'😤 Fix karo khud',e:{money:-5000},fx:'-₹5000'},
+  ]},
+  {tag:'event',text:'Free online course: "How to Build Wealth in 30 Days"',choices:[
+    {t:'📚 Karo yaar',e:{skills:18,happy:8},fx:'+18 skills +8 mood'},
+    {t:'🚫 Scam lag raha hai',e:{},fx:'Safe choice, kuch nahi'},
+  ]},
+  {tag:'event',text:'Rival Arjun ne public mein tujhe insult kiya social media pe!',choices:[
+    {t:"🔥 Public roast wapas karo",e:{rep:20,happy:10,money:-500},fx:'+20 rep +10 mood'},
+    {t:'😤 Legal notice bhejo',e:{money:-8000,rep:30},fx:'-₹8000 +30 rep'},
+    {t:'🧘 Ignore & grow',e:{skills:10,happy:5},fx:'+10 skills +5 mood'},
+  ]},
+  {tag:'event',text:'Festival season! Gifts doge ya save karoge?',choices:[
+    {t:'🎁 Bade gifts do (₹5000)',e:{money:-5000,rep:25,happy:20},fx:'-₹5000 +25 rep +20 mood'},
+    {t:'🤏 Chhote gifts (₹1000)',e:{money:-1000,rep:10,happy:10},fx:'-₹1000 +10 rep +10 mood'},
+    {t:'💸 Save karo',e:{happy:-8},fx:'-8 mood'},
+  ]},
+];
+
+/* ════════════════════════════════════════════
+   CURRENT SHOP FILTER
+════════════════════════════════════════════ */
+var shopCatFilter='all';
+
+/* ════════════════════════════════════════════
+   UTIL FUNCTIONS
+════════════════════════════════════════════ */
+function fmt(n){
+  if(n>=10000000)return'₹'+(n/10000000).toFixed(1)+'Cr';
+  if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';
+  if(n>=1000)return'₹'+(n/1000).toFixed(1)+'K';
+  return'₹'+Math.floor(n);
+}
+function cl(v,mn,mx){mn=mn||0;mx=mx||100;return Math.max(mn,Math.min(mx,v));}
+function toast(msg,type){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.className='show '+(type||'');
+  clearTimeout(t._t);t._t=setTimeout(function(){t.className='';},2400);
+}
+function addLog(msg){G.log.unshift({d:G.day,m:msg});if(G.log.length>80)G.log.pop();}
+
+function getRank(){
+  var m=G.money;
+  if(m<1000)return{l:'BROKE',c:'r0'};
+  if(m<20000)return{l:'STRUGGLING',c:'r1'};
+  if(m<200000)return{l:'MIDDLE CLASS',c:'r2'};
+  if(m<2000000)return{l:'WELL OFF',c:'r3'};
+  if(m<20000000)return{l:'RICH',c:'r4'};
+  return{l:'ELITE',c:'r5'};
+}
+
+function hud(){
+  document.getElementById('hudName').textContent=G.name;
+  document.getElementById('hudMoney').textContent=fmt(G.money);
+  document.getElementById('hudHappy').textContent=G.happy;
+  document.getElementById('hudHealth').textContent=G.health;
+  document.getElementById('hudRep').textContent=G.rep;
+  document.getElementById('hudDay').textContent=G.day;
+  var r=getRank();
+  var rb=document.getElementById('hudRank');
+  rb.textContent=r.l;rb.className='hud-rank '+r.c;
+}
+
+/* ════════════════════════════════════════════
+   SCREEN NAV
+════════════════════════════════════════════ */
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+}
+function setNav(id){
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('on');});
+  var el=document.getElementById(id);if(el)el.classList.add('on');
+}
+function closePanel(){document.getElementById('actionPanel').classList.remove('open');}
+function closeModal(){document.getElementById('storyModal').classList.remove('open');}
+
+/* ════════════════════════════════════════════
+   CITY MAP RENDER
+════════════════════════════════════════════ */
+function renderCity(){
+  var grid=document.getElementById('cityGrid');grid.innerHTML='';
+  LOCATIONS.forEach(function(loc){
+    var locked=false,lockMsg='';
+    if(loc.lockReq){
+      if(loc.lockReq.money&&G.money<loc.lockReq.money){locked=true;lockMsg=loc.lockMsg;}
+      if(loc.lockReq.skills&&G.skills<loc.lockReq.skills){locked=true;lockMsg=loc.lockMsg;}
+    }
+    var d=document.createElement('div');
+    d.className='city-location'+(locked?' locked':'');
+    d.innerHTML='<span class="loc-badge '+loc.badge+'">'+loc.type.toUpperCase()+'</span>'+
+      '<div class="loc-icon">'+loc.icon+'</div>'+
+      '<div class="loc-name">'+loc.name+'</div>'+
+      '<div class="loc-desc">'+loc.desc+'</div>'+
+      (locked?'<div class="loc-req">🔒 '+lockMsg+'</div>':'');
+    if(!locked){
+      d.onclick=function(){visitLocation(loc);};
+    }
+    grid.appendChild(d);
+  });
+}
+
+function visitLocation(loc){
+  if(loc.fn){
+    loc.fn();
+    return;
+  }
+  // Build action panel
+  var html='<div class="ap-header">'+
+    '<span class="ap-icon">'+loc.icon+'</span>'+
+    '<div><div class="ap-title">'+loc.name+'</div><div class="ap-sub">'+loc.desc+'</div></div>'+
+    '<button class="ap-close" onclick="closePanel()">✕</button></div>';
+  html+='<div class="ap-section"><div class="ap-section-title">What will you do?</div>'+
+    '<div class="action-grid">';
+  loc.actions.forEach(function(a){
+    var locked=false;
+    if(a.req){
+      if(a.req.skills&&G.skills<a.req.skills)locked=true;
+      if(a.req.rep&&G.rep<a.req.rep)locked=true;
+      if(a.req.money&&G.money<a.req.money)locked=true;
+    }
+    html+='<button class="act-btn" '+(locked?'disabled':'')+' onclick="doAction('+LOCATIONS.indexOf(loc)+','+loc.actions.indexOf(a)+');closePanel()">'+
+      '<div class="act-name">'+a.name+'</div>'+
+      '<div class="act-cost"><span class="'+(locked?'info':'neg')+'">'+a.cost+'</span> → <span class="pos">'+a.earn+'</span></div>'+
+      (locked?'<div style="font-size:10px;color:var(--orange);margin-top:3px">🔒 Requirements not met</div>':'')+'</button>';
+  });
+  html+='</div></div>';
+  document.getElementById('apSheet').innerHTML=html;
+  document.getElementById('actionPanel').classList.add('open');
+}
+
+function doAction(locIdx,actionIdx){
+  var loc=LOCATIONS[locIdx];
+  var a=loc.actions[actionIdx];
+  a.fn();
+}
+
+/* ════════════════════════════════════════════
+   WORK / SPEND HELPERS
+════════════════════════════════════════════ */
+function doWork(earn,healthCost,energyCost,skillGain){
+  if(G.energy<Math.abs(energyCost||0)){toast('😴 Energy nahi hai! Rest karo.','neg');return;}
+  G.money+=earn;
+  G.health=cl(G.health+(healthCost||0));
+  G.energy=Math.max(0,G.energy+(energyCost||0));
+  if(skillGain)G.skills=cl(G.skills+skillGain);
+  G.workedToday=true;
+  addLog('Work: +'+fmt(earn));
+  toast('💰 +'+fmt(earn)+' kamaaya!','gold');
+  hud();
+}
+function spend(cost,happyGain,healthGain,repGain,skillGain,msg){
+  if(G.money<cost){toast('💸 Paisa nahi hai!','neg');return;}
+  G.money-=cost;
+  G.happy=cl(G.happy+(happyGain||0));
+  G.health=cl(G.health+(healthGain||0));
+  G.rep=cl(G.rep+(repGain||0));
+  if(skillGain)G.skills=cl(G.skills+skillGain);
+  addLog(msg);
+  toast(msg,'pos');
+  hud();
+}
+function setJob(id){
+  var j=JOB_DATA[id];
+  if(!j)return;
+  G.job=id;
+  toast('✅ '+j.emoji+' '+j.name+' ban gaye! +'+fmt(j.pay)+'/day','gold');
+  addLog('Job: '+j.name);
+  hud();
+}
+
+/* ════════════════════════════════════════════
+   STOCK PANEL
+════════════════════════════════════════════ */
+var STOCKS=[
+  {id:'tc',n:'TechCo',e:'💻',price:100},
+  {id:'fz',n:'FoodZ',e:'🍔',price:50},
+  {id:'re',n:'Realty+',e:'🏠',price:200},
+  {id:'bt',n:'BitCoin',e:'🪙',price:500},
+  {id:'eg',n:'EnergyGrid',e:'⚡',price:80},
+];
+function openStockPanel(){
+  var html='<div class="ap-header"><span class="ap-icon">📈</span><div><div class="ap-title">Stock Exchange</div><div class="ap-sub">Buy low, sell high</div></div><button class="ap-close" onclick="closePanel()">✕</button></div>';
+  html+='<div class="ap-section"><div class="ap-section-title">Live Stocks</div>';
+  STOCKS.forEach(function(s){
+    var ch=((Math.random()*14)-6).toFixed(1);
+    var col=ch>=0?'var(--neon)':'var(--red)';
+    var held=G.portfolio[s.id]||0;
+    html+='<div style="background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+      '<span style="font-family:var(--font-head);font-size:14px">'+s.e+' '+s.n+'</span>'+
+      '<span style="color:'+col+';font-size:12px;font-family:var(--font-ui)">'+(ch>=0?'+':'')+ch+'% &nbsp;'+fmt(s.price)+'</span></div>'+
+      '<div style="display:flex;gap:8px;margin-top:8px">'+
+      '<button class="act-btn" style="flex:1;padding:8px" '+(G.money<s.price?'disabled':'')+' onclick="buyStk(\''+s.id+'\');closePanel();openStockPanel()">Buy '+fmt(s.price)+'</button>'+
+      '<button class="act-btn" style="flex:1;padding:8px" '+(held<1?'disabled':'')+' onclick="sellStk(\''+s.id+'\');closePanel();openStockPanel()">Sell ('+held+')</button></div></div>';
+  });
+  html+='</div>';
+  document.getElementById('apSheet').innerHTML=html;
+  document.getElementById('actionPanel').classList.add('open');
+}
+function buyStk(id){
+  var s=STOCKS.filter(function(x){return x.id===id;})[0];
+  if(G.money<s.price){toast('Paisa nahi!','neg');return;}
+  G.money-=s.price;G.portfolio[id]=(G.portfolio[id]||0)+1;
+  toast('📈 1 share: '+s.n,'pos');hud();
+}
+function sellStk(id){
+  var s=STOCKS.filter(function(x){return x.id===id;})[0];
+  if(!(G.portfolio[id]>=1)){toast('Share nahi!','neg');return;}
+  var sp=Math.floor(s.price*(0.8+Math.random()*0.7));
+  G.money+=sp;G.portfolio[id]--;
+  toast('💰 Becha +'+fmt(sp),sp>s.price?'pos':'neg');hud();
+}
+
+/* ════════════════════════════════════════════
+   SHOP
+════════════════════════════════════════════ */
+function filterShop(cat){shopCatFilter=cat;}
+function renderShop(){
+  var catsEl=document.getElementById('shopCats');
+  catsEl.innerHTML=SHOP_CATS.map(function(c){
+    return '<button class="scat-btn'+(shopCatFilter===c.id?' on':'')+'" onclick="shopFilter(\''+c.id+'\')">'+c.label+'</button>';
+  }).join('');
+  var items=shopCatFilter==='all'?SHOP_ITEMS:SHOP_ITEMS.filter(function(x){return x.cat===shopCatFilter;});
+  var grid=document.getElementById('shopGrid');grid.innerHTML='';
+  items.forEach(function(item){
+    var owned=G.ownedItems.indexOf(item.id)>=0||item.start;
+    var canBuy=!owned&&G.money>=item.p&&item.p>0;
+    var d=document.createElement('div');d.className='shop-card'+(owned?' owned':'');
+    var badge=owned?'<span class="sc-badge scb-own">✓</span>':(G.money<item.p&&item.p>0?'<span class="sc-badge scb-lock">🔒</span>':'');
+    var fx='';
+    if(item.hb)fx+='<span style="color:var(--neon)">+'+item.hb+' 😊/day</span> ';
+    if(item.hlb)fx+='<span style="color:var(--red)">+'+item.hlb+' ❤️/day</span> ';
+    if(item.ef&&item.ef.rep)fx+='<span style="color:var(--blue)">+'+item.ef.rep+' rep</span> ';
+    var btn=owned
+      ?(item.daily?'<button class="sc-use-btn" onclick="useShopItem(\''+item.id+'\')">✨ Use</button>':'<button class="sc-buy-btn cant" disabled>✓ Owned</button>')
+      :'<button class="sc-buy-btn '+(canBuy?'can':'cant')+'" '+(canBuy?'':'disabled')+' onclick="buyShopItem(\''+item.id+'\')">'+(canBuy?'Buy':'Can\'t')+'</button>';
+    d.innerHTML=badge+'<div class="sc-emoji">'+item.e+'</div><div class="sc-name">'+item.n+'</div>'+
+      '<div class="sc-desc">'+item.d+'</div>'+
+      '<div class="sc-price">'+(item.p===0?'FREE':fmt(item.p))+'</div>'+
+      (fx?'<div class="sc-fx">'+fx+'</div>':'')+btn;
+    grid.appendChild(d);
+  });
+}
+function shopFilter(cat){shopCatFilter=cat;renderShop();}
+function buyShopItem(id){
+  var item=SHOP_ITEMS.filter(function(x){return x.id===id;})[0];
+  if(!item||G.ownedItems.indexOf(id)>=0)return;
+  if(G.money<item.p){toast('💸 Paisa nahi!','neg');return;}
+  G.money-=item.p;G.ownedItems.push(id);
+  if(item.ef){
+    if(item.ef.happy)G.happy=cl(G.happy+item.ef.happy);
+    if(item.ef.health)G.health=cl(G.health+item.ef.health);
+    if(item.ef.rep)G.rep=cl(G.rep+item.ef.rep);
+    if(item.ef.skills)G.skills=cl(G.skills+item.ef.skills);
+  }
+  addLog('Bought: '+item.e+' '+item.n);
+  toast(item.e+' '+item.n+' kharida! 🎉','gold');hud();renderShop();
+}
+function useShopItem(id){
+  var item=SHOP_ITEMS.filter(function(x){return x.id===id;})[0];
+  if(!item)return;
+  if(item.dc&&G.money<item.dc){toast('Paisa nahi!','neg');return;}
+  if(item.dc)G.money-=item.dc;
+  if(item.ef){
+    if(item.ef.happy)G.happy=cl(G.happy+item.ef.happy);
+    if(item.ef.health)G.health=cl(G.health+item.ef.health);
+    if(item.ef.rep)G.rep=cl(G.rep+item.ef.rep);
+  }
+  toast(item.e+' '+item.n+' use kiya!','pos');hud();
+}
+
+/* ════════════════════════════════════════════
+   RIVALS
+════════════════════════════════════════════ */
+function renderRivals(){
+  var wrap=document.getElementById('rivalWrap');wrap.innerHTML='';
+  var title=document.createElement('div');
+  title.style.cssText='font-family:var(--font-head);font-size:20px;letter-spacing:2px;padding:12px 0 4px;color:var(--red)';
+  title.textContent='😠 YOUR RIVALS';wrap.appendChild(title);
+  RIVALS.forEach(function(rv){
+    if(rv.req&&G.rep<(rv.req.rep||0)){return;} // locked rival
+    var st=G.rivals[rv.id]||{status:'neutral'};
+    var statusColor=st.status==='enemy'?'var(--red)':st.status==='ally'?'var(--neon)':'var(--muted)';
+    var statusIcon=st.status==='enemy'?'⚔️':st.status==='ally'?'🤝':'🔘';
+    var wealthCmp=G.money>rv.wealth?'<span style="color:var(--neon)">✓ You\'re richer!</span>':'<span style="color:var(--red)">⚠ They\'re richer</span>';
+    var d=document.createElement('div');d.className='rival-card';
+    d.innerHTML='<div class="rival-avatar">'+rv.avatar+'</div>'+
+      '<div class="rival-info">'+
+      '<div class="rival-name">'+rv.name+'</div>'+
+      '<div class="rival-desc">'+rv.desc+'</div>'+
+      '<div class="rival-wealth">💰 '+fmt(rv.wealth)+' &nbsp;'+wealthCmp+'</div>'+
+      '<div class="rival-status" style="color:'+statusColor+'">'+statusIcon+' '+st.status.toUpperCase()+'</div></div>'+
+      '<div class="rival-actions">'+
+      '<button class="rv-btn challenge" '+(G.rivalActToday[rv.id]?'disabled':'')+' onclick="challengeRival(\''+rv.id+'\')">⚔️ Challenge</button>'+
+      '<button class="rv-btn ally" '+(G.rivalActToday[rv.id]||st.status==='enemy'?'disabled':'')+' onclick="allyRival(\''+rv.id+'\')">🤝 Make Ally</button></div>';
+    wrap.appendChild(d);
+  });
+  // locked rivals
+  RIVALS.filter(function(rv){return rv.req&&G.rep<(rv.req.rep||0);}).forEach(function(rv){
+    var d=document.createElement('div');d.className='rival-card';d.style.opacity='.5';
+    d.innerHTML='<div class="rival-avatar">🔒</div><div class="rival-info"><div class="rival-name">???</div><div class="rival-desc">'+rv.desc.substring(0,20)+'...</div><div class="loc-req">🔒 Rep '+rv.req.rep+'+ to unlock</div></div>';
+    wrap.appendChild(d);
+  });
+}
+function challengeRival(id){
+  var rv=RIVALS.filter(function(x){return x.id===id;})[0];
+  var win=G.money>rv.wealth*0.7&&G.skills>40;
+  var earn=Math.floor(rv.wealth*0.1);
+  if(win){
+    G.money+=earn;G.rep=cl(G.rep+20);
+    G.rivals[id]={status:'enemy'};
+    showStoryModal('rival','Tu jeet gaya! '+rv.name+' haara. Usne tujhe gift kiya '+fmt(earn)+'. But ab wo tera permanent dushman hai.',
+      [{t:'😤 Accept karo',e:{money:0},fx:'Challenge done!'}]);
+    addLog('Rival beaten: '+rv.name);toast('⚔️ '+rv.name+' haara! +'+fmt(earn),'gold');
+  } else {
+    G.money=Math.max(0,G.money-2000);G.happy=cl(G.happy-10);
+    G.rivals[id]={status:'enemy'};
+    toast('😤 Tujhe lose karna pada... -₹2000','neg');addLog('Rival loss: '+rv.name);
+  }
+  G.rivalActToday[id]=true;hud();renderRivals();
+}
+function allyRival(id){
+  var rv=RIVALS.filter(function(x){return x.id===id;})[0];
+  if(G.money<5000){toast('Alliance ke liye ₹5K minimum chahiye','neg');return;}
+  G.money-=5000;G.rep=cl(G.rep+15);
+  G.rivals[id]={status:'ally'};
+  G.rivalActToday[id]=true;
+  toast('🤝 '+rv.name+' ab tera ally hai! +15 rep','pos');addLog('Ally: '+rv.name);hud();renderRivals();
+}
+
+/* ════════════════════════════════════════════
+   LOVE
+════════════════════════════════════════════ */
+function renderLove(){
+  var wrap=document.getElementById('loveWrap');wrap.innerHTML='';
+  var titleDiv=document.createElement('div');
+  titleDiv.style.cssText='font-family:var(--font-head);font-size:20px;letter-spacing:2px;padding:12px 0 4px;color:var(--red)';
+  titleDiv.textContent='💘 RELATIONSHIPS';wrap.appendChild(titleDiv);
+
+  if(G.love.partner){
+    var p=LOVE_PEOPLE.filter(function(x){return x.id===G.love.partner;})[0];
+    var stageName=['💔 Single','💞 Dating','💍 Married'][G.love.stage]||'Dating';
+    // Status card
+    var sc=document.createElement('div');sc.className='love-status-card';
+    sc.innerHTML='<div class="love-heart">'+p.avatar+'</div>'+
+      '<div class="love-person-name">'+p.name+'</div>'+
+      '<div style="font-size:12px;color:var(--muted);margin-top:3px">'+stageName+' · '+p.trait+'</div>'+
+      '<div class="love-meter-wrap"><div class="love-meter-label"><span>Bond</span><span>'+G.love.meter+'/100</span></div>'+
+      '<div class="love-meter-track"><div class="love-meter-fill" style="width:'+G.love.meter+'%"></div></div></div>';
+    wrap.appendChild(sc);
+    // Actions
+    var grid=document.createElement('div');grid.className='love-action-grid';
+    var acts=[
+      {icon:'🌹',name:'Send Flowers',cost:'-₹1000',efCost:1000,meterGain:8,txt:'Flowers bheje! +8 bond'},
+      {icon:'🍽️',name:'Date Night',cost:'-₹3000',efCost:3000,meterGain:15,txt:'Date raat! +15 bond'},
+      {icon:'🎁',name:'Surprise Gift',cost:'-₹5000',efCost:5000,meterGain:20,txt:'Gift surprise! +20 bond'},
+      {icon:'💬',name:'Sweet Talk',cost:'Free',efCost:0,meterGain:4,txt:'Sweet words! +4 bond'},
+      {icon:'🏖️',name:'Weekend Trip',cost:'-₹20000',efCost:20000,meterGain:35,txt:'Trip! +35 bond'},
+      {icon:'💍',name:'Propose!',cost:'-₹50000',efCost:50000,meterGain:0,txt:'',special:'propose'},
+    ];
+    acts.forEach(function(a){
+      if(G.love.stage>=2&&a.special==='propose')return;
+      if(G.love.stage<1&&a.name!=='Sweet Talk'&&a.name!=='Send Flowers')return;
+      var btn=document.createElement('button');btn.className='love-act';
+      btn.innerHTML='<div class="la-icon">'+a.icon+'</div><div class="la-name">'+a.name+'</div>'+
+        '<div class="la-cost"><span class="neg">'+a.cost+'</span></div>';
+      btn.disabled=G.loveActToday||(a.efCost>0&&G.money<a.efCost);
+      btn.onclick=function(){loveAction(a);};
+      grid.appendChild(btn);
+    });
+    wrap.appendChild(grid);
+  } else {
+    // Show single people
+    var sDiv=document.createElement('div');
+    sDiv.style.cssText='font-size:13px;color:var(--muted);padding:8px 0 12px;font-family:var(--font-ui)';
+    sDiv.textContent='You\'re single. Meet someone special:';wrap.appendChild(sDiv);
+    LOVE_PEOPLE.forEach(function(p){
+      var canMeet=G.rep>=p.reqRep&&G.money>=p.reqMoney;
+      var d=document.createElement('div');d.className='love-person-card';
+      d.innerHTML='<div class="lp-avatar">'+p.avatar+'</div>'+
+        '<div><div class="lp-name">'+p.name+'</div><div class="lp-desc">'+p.desc+'</div>'+
+        '<div style="font-size:11px;color:var(--purple);margin-top:2px">'+p.trait+'</div>'+
+        (!canMeet?'<div class="lp-req">🔒 Rep '+p.reqRep+'+ · '+fmt(p.reqMoney)+'+ needed</div>':'')+'</div>';
+      if(canMeet){d.onclick=function(){meetPerson(p.id);};}
+      else{d.style.opacity='.5';}
+      wrap.appendChild(d);
+    });
+  }
+}
+function meetPerson(id){
+  var p=LOVE_PEOPLE.filter(function(x){return x.id===id;})[0];
+  G.love={partner:id,meter:20,stage:0};
+  toast('💘 '+p.name+' se mulaqat hui! Bond started.','pos');
+  addLog('Met: '+p.name);renderLove();
+}
+function loveAction(a){
+  if(a.special==='propose'){
+    if(G.love.meter<80){toast('Bond 80+ chahiye propose karne ke liye!','neg');return;}
+    if(G.money<50000){toast('₹50K+ chahiye ring ke liye!','neg');return;}
+    G.money-=50000;G.love.stage=2;G.love.meter=100;
+    var p=LOVE_PEOPLE.filter(function(x){return x.id===G.love.partner;})[0];
+    toast('💍 '+p.name+' ne haan keh diya! Shaadi ho gayi! 🎉','gold');
+    addLog('Married: '+p.name);
+    G.happy=cl(G.happy+30);G.rep=cl(G.rep+20);hud();renderLove();return;
+  }
+  if(a.efCost>0&&G.money<a.efCost){toast('Paisa nahi!','neg');return;}
+  if(a.efCost>0)G.money-=a.efCost;
+  G.love.meter=Math.min(100,G.love.meter+a.meterGain);
+  G.happy=cl(G.happy+8);
+  if(G.love.meter>=60&&G.love.stage===0){
+    var pp=LOVE_PEOPLE.filter(function(x){return x.id===G.love.partner;})[0];
+    G.love.stage=1;
+    showStoryModal('love',pp.name+' tujhe officially date karna chahti/chahta hai! 💘',
+      [{t:'💞 Haan ji! Pakka dating!',e:{happy:15,rep:5},fx:'+15 mood +5 rep'}]);
+  }
+  G.loveActToday=true;
+  toast(a.txt,'pos');addLog(a.txt);hud();renderLove();
+}
+
+/* ════════════════════════════════════════════
+   STORY MODAL
+════════════════════════════════════════════ */
+function showStoryModal(tag,text,choices){
+  var tagLabels={story:'STORY',event:'EVENT',love:'LOVE ❤️',rival:'RIVAL ⚔️',work:'WORK'};
+  var html='<span class="sm-tag '+tag+'">'+(tagLabels[tag]||'EVENT')+'</span>'+
+    '<p class="sm-text">'+text+'</p>'+
+    '<div class="sm-choices">';
+  choices.forEach(function(c){
+    html+='<button class="sm-choice" onclick="pickChoice('+JSON.stringify(c).replace(/"/g,"'")+');closeModal()">'+
+      '<div class="ch-text">'+c.t+'</div>'+
+      '<div class="ch-fx">'+fmtFx(c.fx)+'</div></button>';
+  });
+  html+='</div>';
+  document.getElementById('smBox').innerHTML=html;
+  document.getElementById('storyModal').classList.add('open');
+}
+function pickChoice(c){
+  var e=c.e||{};
+  if(e.money)G.money=Math.max(0,G.money+e.money);
+  if(e.happy)G.happy=cl(G.happy+e.happy);
+  if(e.health)G.health=cl(G.health+e.health);
+  if(e.rep)G.rep=cl(G.rep+e.rep);
+  if(e.skills)G.skills=cl(G.skills+e.skills);
+  hud();
+}
+function fmtFx(d){
+  if(!d)return'';
+  return d.replace(/\+₹[\d,.KLCr]+/g,function(s){return'<span class="pos">'+s+'</span>';})
+          .replace(/-₹[\d,.KLCr]+/g,function(s){return'<span class="neg">'+s+'</span>';})
+          .replace(/\+\d+\s\w+/g,function(s){return'<span class="pos">'+s+'</span>';})
+          .replace(/-\d+\s\w+/g,function(s){return'<span class="neg">'+s+'</span>';})
+          .replace(/\+[\w\s]+/g,function(s){return'<span class="gold">'+s+'</span>';});
+}
+
+/* ════════════════════════════════════════════
+   MINI GAMES
+════════════════════════════════════════════ */
+var mgState={};
+function startMiniGame(type){
+  goScreen('miniGameScreen');
+  if(type==='chai') miniChaiGame();
+  else if(type==='delivery') miniDeliveryGame();
+  else if(type==='casino') miniCasinoGame();
+}
+
+/* CHAI TAPPING GAME */
+function miniChaiGame(){
+  mgState={type:'chai',taps:0,timeLeft:10,timer:null,done:false};
+  function renderChai(){
+    document.getElementById('mgContainer').innerHTML=
+      '<div class="mg-title">☕ CHAI BANAO!</div>'+
+      '<div class="mg-sub">10 seconds mein zyada se zyada tap karo!</div>'+
+      '<div class="tap-area" id="tapArea" onclick="mgTap()">'+
+      '<div class="tap-emoji">☕</div>'+
+      '<div class="tap-count" id="tapCount">0</div>'+
+      '<div class="tap-hint">TAP TAP TAP!</div></div>'+
+      '<div class="mg-timer"><div class="mg-timer-fill" id="mgTimerFill" style="width:100%"></div></div>'+
+      '<div style="font-family:var(--font-ui);font-size:13px;color:var(--muted);text-align:center;margin-top:6px" id="mgTimerTxt">⏱ 10s</div>';
+    mgState.timer=setInterval(function(){
+      mgState.timeLeft-=0.1;
+      var pct=Math.max(0,(mgState.timeLeft/10)*100);
+      var tf=document.getElementById('mgTimerFill');
+      if(tf)tf.style.width=pct+'%';
+      var tt=document.getElementById('mgTimerTxt');
+      if(tt)tt.textContent='⏱ '+mgState.timeLeft.toFixed(1)+'s';
+      if(mgState.timeLeft<=0){
+        clearInterval(mgState.timer);
+        var earn=Math.min(2000,mgState.taps*15);
+        G.money+=earn;addLog('Chai game: +'+fmt(earn));hud();
+        document.getElementById('mgContainer').innerHTML=
+          '<div class="mg-title">☕ CHAI READY!</div>'+
+          '<div class="mg-result"><div class="res-earn">'+fmt(earn)+'</div>'+
+          '<div class="res-sub">'+mgState.taps+' taps → Chai biki!</div></div>'+
+          '<button class="mg-btn" onclick="goScreen(\'cityScreen\')">🌆 Back to City</button>';
+      }
+    },100);
+  }
+  renderChai();
+}
+function mgTap(){
+  if(mgState.timeLeft<=0)return;
+  mgState.taps++;
+  var el=document.getElementById('tapCount');
+  if(el)el.textContent=mgState.taps;
+  // Animate
+  var area=document.getElementById('tapArea');
+  if(area){area.style.transform='scale(0.96)';setTimeout(function(){area.style.transform='';},80);}
+}
+
+/* DELIVERY MATCH GAME */
+function miniDeliveryGame(){
+  var emojis=['📦','🎁','🛍️','📮','📫','📬','📭','📪'];
+  var seq=[];var shown=[];var userSeq=[];var score=0;var round=0;
+  function nextRound(){
+    round++;
+    seq.push(emojis[Math.floor(Math.random()*emojis.length)]);
+    shown=seq.slice();
+    renderDelivery(true);
+    // flash sequence
+    var i=0;
+    var interval=setInterval(function(){
+      if(i>=shown.length){clearInterval(interval);renderDelivery(false);return;}
+      var cells=document.querySelectorAll('.del-pkg');
+      cells.forEach(function(c){c.classList.remove('correct');});
+      var idx=emojis.indexOf(shown[i]);
+      if(cells[idx])cells[idx].classList.add('correct');
+      i++;
+    },600);
+  }
+  function renderDelivery(showing){
+    var shuf=emojis.slice().sort(function(){return Math.random()-.5;});
+    document.getElementById('mgContainer').innerHTML=
+      '<div class="mg-title">🚚 DELIVERY RUN!</div>'+
+      '<div class="mg-sub">'+(showing?'Sequence yaad karo...':'Ab same order mein tap karo!')+' Round '+round+'</div>'+
+      '<div class="delivery-grid" id="delGrid">'+
+      shuf.map(function(e){return'<div class="del-pkg" onclick="delTap(\''+e+'\')">'+e+'</div>';}).join('')+'</div>'+
+      '<div style="font-family:var(--font-head);font-size:18px;color:var(--gold);text-align:center;margin-top:10px">Score: '+score+'</div>';
+    window._shuf=shuf;
+  }
+  window.delTap=function(e){
+    var expected=seq[userSeq.length];
+    if(e===expected){
+      userSeq.push(e);
+      var idx=window._shuf.indexOf(e);
+      var cells=document.querySelectorAll('.del-pkg');
+      if(cells[idx])cells[idx].classList.add('correct');
+      if(userSeq.length===seq.length){
+        score+=round*50;userSeq=[];
+        setTimeout(function(){if(round<5)nextRound();else endDelivery();},500);
+      }
+    } else {
+      var idx2=window._shuf.indexOf(e);
+      var cells2=document.querySelectorAll('.del-pkg');
+      if(cells2[idx2])cells2[idx2].classList.add('wrong');
+      setTimeout(endDelivery,600);
+    }
+  };
+  function endDelivery(){
+    var earn=score;G.money+=earn;addLog('Delivery game: +'+fmt(earn));hud();
+    document.getElementById('mgContainer').innerHTML=
+      '<div class="mg-title">🚚 GAME OVER!</div>'+
+      '<div class="mg-result"><div class="res-earn">'+fmt(earn)+'</div>'+
+      '<div class="res-sub">Score: '+score+' — '+round+' rounds!</div></div>'+
+      '<button class="mg-btn" onclick="goScreen(\'cityScreen\')">🌆 Back to City</button>';
+  }
+  nextRound();
+}
+
+/* CASINO MINI GAME */
+function miniCasinoGame(){
+  var bet=1000;
+  function renderCasino(){
+    document.getElementById('mgContainer').innerHTML=
+      '<div class="mg-title">🎰 CASINO!</div>'+
+      '<div class="mg-sub">Bet wisely. You have '+fmt(G.money)+'</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0">'+
+      [500,1000,5000,10000].map(function(b){
+        return'<button class="mg-btn '+(bet===b?'gold':'')+'" style="padding:10px;font-size:14px" onclick="setCasinoBet('+b+')">₹'+b+'</button>';
+      }).join('')+'</div>'+
+      '<div style="font-family:var(--font-head);font-size:20px;text-align:center;color:var(--gold);margin:8px 0">Bet: '+fmt(bet)+'</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'+
+      '<button class="mg-btn" '+(G.money<bet?'disabled':'')+' onclick="playCasino(\'low\')">LOW<br><small style="font-size:11px">2x win</small></button>'+
+      '<button class="mg-btn red" '+(G.money<bet?'disabled':'')+' onclick="playCasino(\'lucky\')">LUCKY 7<br><small style="font-size:11px">5x win</small></button>'+
+      '<button class="mg-btn" '+(G.money<bet?'disabled':'')+' onclick="playCasino(\'high\')">HIGH<br><small style="font-size:11px">2x win</small></button></div>'+
+      '<button class="mg-btn" style="background:var(--s3);color:var(--muted);margin-top:8px" onclick="goScreen(\'cityScreen\')">← Leave</button>';
+    mgState.bet=bet;
+  }
+  window.setCasinoBet=function(b){bet=b;renderCasino();};
+  window.playCasino=function(type){
+    if(G.money<bet){toast('Paisa nahi!','neg');return;}
+    var roll=Math.random();
+    var win=false;
+    var multi=2;
+    if(type==='low'&&roll<0.48)win=true;
+    else if(type==='high'&&roll>0.52)win=true;
+    else if(type==='lucky'&&roll>0.8){win=true;multi=5;}
+    if(win){
+      var earn=bet*multi;G.money+=earn-bet;
+      toast('🎰 JACKPOT! +'+fmt(earn),'gold');addLog('Casino win: +'+fmt(earn));
+    } else {
+      G.money=Math.max(0,G.money-bet);
+      toast('😤 Haara -'+fmt(bet),'neg');addLog('Casino loss: -'+fmt(bet));
+    }
+    hud();renderCasino();
+  };
+  renderCasino();
+}
+
+/* ════════════════════════════════════════════
+   END OF DAY
+════════════════════════════════════════════ */
+function endDay(){
+  G.day++;G.age=18+Math.floor(G.day/365);
+  G.workedToday=false;G.loveActToday=false;G.rivalActToday={};
+  G.energy=Math.min(100,G.energy+40); // rest restores energy
+
+  // Job income
+  if(G.job){
+    var j=JOB_DATA[G.job];
+    if(j){G.money+=j.pay;addLog(j.emoji+' Salary: +'+fmt(j.pay));}
+  }
+
+  // Passive income from owned businesses
+  var passive=0;
+  ['tapri','kirana','salon','gym_biz','hotel','factory','mall'].forEach(function(id){
+    if(G.ownedItems.indexOf(id)>=0){
+      var inc={tapri:200,kirana:800,salon:1200,gym_biz:3000,hotel:8000,factory:20000,mall:80000}[id]||0;
+      passive+=inc;
+    }
+  });
+  if(passive>0){G.money+=passive;addLog('Passive: +'+fmt(passive));}
+
+  // Daily item bonuses
+  var dh=0,dhl=0;
+  G.ownedItems.forEach(function(id){
+    var item=SHOP_ITEMS.filter(function(x){return x.id===id;})[0];
+    if(!item)return;
+    if(item.hb)dh+=item.hb;
+    if(item.hlb)dhl+=item.hlb;
+  });
+  G.happy=cl(G.happy+dh-3);
+  G.health=cl(G.health+dhl-1);
+
+  // Stock fluctuation
+  STOCKS.forEach(function(s){s.price=Math.max(5,Math.floor(s.price*(0.88+Math.random()*0.28)));});
+
+  // Ally bonus
+  Object.keys(G.rivals).forEach(function(id){
+    if(G.rivals[id].status==='ally'){
+      G.money+=500;addLog('Ally income: +₹500');
+    }
+  });
+
+  // Story events
+  if(STORY_EVENTS[G.day]){
+    var ev=STORY_EVENTS[G.day];
+    showStoryModal(ev.tag,ev.text,ev.choices);hud();return;
+  }
+
+  // Random events every 5 days
+  if(G.day%5===0){
+    var rev=RANDOM_EVENTS[Math.floor(Math.random()*RANDOM_EVENTS.length)];
+    showStoryModal(rev.tag,rev.text,rev.choices);hud();return;
+  }
+
+  // Game over checks
+  if(G.health<=0){gameOver('💀 DEAD','Sehat ne saath chhod diya...');return;}
+  if(G.happy<=0){gameOver('😔 GAVE UP','Khushi khatam ho gayi zindagi se...');return;}
+  if(G.money<=0&&G.day>10&&!G.job){gameOver('💸 BANKRUPT','Ek phooTi kaudi nahi bachi...');return;}
+
+  hud();
+  var citySubtitles=['New day, new chances.','Har din ek naya mauka.','Grind time!','Make it count.','Keep moving.'];
+  document.getElementById('citySubtitle').textContent=citySubtitles[G.day%citySubtitles.length];
+  toast('☀️ Din '+G.day+' shuru! Energy: '+G.energy,'pos');
+}
+
+function gameOver(title,sub){
+  document.getElementById('goTitle').textContent=title;
+  document.getElementById('goSub').textContent=sub;
+  document.getElementById('goMoney').textContent=fmt(G.money);
+  document.getElementById('goStats').textContent='Day '+G.day+' · Age '+G.age+' · '+getRank().l;
+  goScreen('gameOver');
+  document.getElementById('hud').classList.remove('visible');
+  document.getElementById('bottomNav').classList.remove('visible');
+}
+
+/* ════════════════════════════════════════════
+   START GAME
+════════════════════════════════════════════ */
+function startGame(){
+  var nameInput=document.getElementById('playerNameInput');
+  G.name=(nameInput.value.trim()||'Raju').toUpperCase();
+  G.ownedItems.push('jhuggi','rags');
+  goScreen('cityScreen');
+  document.getElementById('hud').classList.add('visible');
+  document.getElementById('bottomNav').classList.add('visible');
+  hud();renderCity();
+  // Show intro story
+  setTimeout(function(){
+    showStoryModal('story',
+      'Welcome to the city, '+G.name+'. You have ₹500 and a dream. The city doesn\'t care about your past — only your future. Choose your first step.',
+      STORY_EVENTS[1].choices);
+  },400);
+}
+</script>
+</body>
+</html>
